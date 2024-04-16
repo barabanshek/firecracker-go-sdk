@@ -1132,10 +1132,15 @@ func (m *Machine) ResumeVM(ctx context.Context, opts ...PatchVMOpt) error {
 }
 
 // CreateSnapshot creates a snapshot of the VM
-func (m *Machine) CreateSnapshot(ctx context.Context, memFilePath, snapshotPath string, opts ...CreateSnapshotOpt) error {
+func (m *Machine) CreateSnapshot(ctx context.Context, memFilePath, snapshotPath string, diffSnapshot bool, opts ...CreateSnapshotOpt) error {
 	snapshotParams := &models.SnapshotCreateParams{
 		MemFilePath:  String(memFilePath),
 		SnapshotPath: String(snapshotPath),
+		SnapshotType: "Full",
+	}
+
+	if diffSnapshot {
+		snapshotParams.SnapshotType = "Diff"
 	}
 
 	if _, err := m.client.CreateSnapshot(ctx, snapshotParams, opts...); err != nil {
