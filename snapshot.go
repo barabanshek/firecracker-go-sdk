@@ -18,4 +18,5 @@ type SnapshotConfig struct {
 	SnapshotPath        string
 	EnableDiffSnapshots bool
 	ResumeVM            bool
+	SnapshotType        string
 }

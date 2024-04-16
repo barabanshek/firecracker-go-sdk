@@ -1132,7 +1132,7 @@ func (m *Machine) ResumeVM(ctx context.Context, opts ...PatchVMOpt) error {
 }
 
 // CreateSnapshot creates a snapshot of the VM
-func (m *Machine) CreateSnapshot(ctx context.Context, memFilePath, snapshotPath string, diffSnapshot bool, opts ...CreateSnapshotOpt) error {
+func (m *Machine) CreateSnapshot(ctx context.Context, memFilePath, snapshotPath string, diffSnapshot bool, doCompression bool, opts ...CreateSnapshotOpt) error {
 	snapshotParams := &models.SnapshotCreateParams{
 		MemFilePath:  String(memFilePath),
 		SnapshotPath: String(snapshotPath),
@@ -1141,6 +1141,14 @@ func (m *Machine) CreateSnapshot(ctx context.Context, memFilePath, snapshotPath 
 
 	if diffSnapshot {
 		snapshotParams.SnapshotType = "Diff"
+	}
+
+	if diffSnapshot && doCompression {
+		snapshotParams.SnapshotType = "DiffCompressed"
+	}
+
+	if !diffSnapshot && doCompression {
+		snapshotParams.SnapshotType = "FullCompressed"
 	}
 
 	if _, err := m.client.CreateSnapshot(ctx, snapshotParams, opts...); err != nil {
@@ -1159,6 +1167,7 @@ func (m *Machine) loadSnapshot(ctx context.Context, snapshot *SnapshotConfig) er
 		SnapshotPath:        &snapshot.SnapshotPath,
 		EnableDiffSnapshots: snapshot.EnableDiffSnapshots,
 		ResumeVM:            snapshot.ResumeVM,
+		SnapshotType:        snapshot.SnapshotType,
 	}
 
 	if _, err := m.client.LoadSnapshot(ctx, snapshotParams); err != nil {
